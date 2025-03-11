@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta description="A Website to communicate to your Carduino, your own 6v 250rpm, Motor driven, Arduino, Car, Vehicle">
+    <meta authors="thdoctor">
+    <title>Carduino Hub</title>
+    <style>
+        :root {
+            --primary: #2196F3;
+            --secondary: #FF4081;
+            --background: #121212;
+            --surface: #212121;
+            --subinterface: #FF2665;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--background);
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .voice-container {
+            position: relative;
+            margin-top: 50px;
+        }
+
+        #voiceButton {
+            width: 105px;
+            height: 105px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3243s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+        }
+
+        #voiceButton.listening {
+            background: var(--secondary);
+            box-shadow: 0 0 20px rgba(255,64,129,0.4);
+            animation: pulse 1.852s infinite;
+        }
+
+        .command-log {
+            width: 88%;
+            max-width: 560px;
+            height: 260px;
+            background: var(--surface);
+            margin-top: 30px;
+            padding: 16px;
+            border-radius: 15px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+        }
+
+        .log-entry {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+  <h1 id="IntroText">Carduino Hub</h1>
+    <div class="voice-container">
+        <button id="voiceButton">🎤</button>
+    </div>
+    <div class="command-log" id="commandLog"></div>
+
+    <script>
+        const COMMANDS = {
+            'forward': 'UP',
+            'backward': 'DOWN',
+            'left': 'LEFT',
+            'right': 'RIGHT',
+            'stop': 'STOP',
+            'halt': 'STOP',
+            'go': 'UP',
+            'reverse': 'DOWN'
+        };
+
+        const GITHUB_CONFIG = {
+            token: 'YOUR_GITHUB_PAT',
+            owner: 'thdoctor0',
+            repo: 'Carduino-HUB-PLUS',
+            path: 'command.json'
+        };
+
+        let isListening = false;
+        let recognition = null;
+
+        const voiceButton = document.getElementById('voiceButton');
+        const commandLog = document.getElementById('commandLog');
+
+        function initVoice() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                addLogEntry('⚠️ Voice recognition not supported in this browser, Try to use google chrome');
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isListening = true;
+                voiceButton.classList.add('listening');
+                addLogEntry('System: Listening...');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0].transcript.toLowerCase())
+                    .join('');
+
+                if (event.results[0].isFinal) {
+                    processCommand(transcript);
+                }
+            };
+
+            recognition.onerror = (event) => {
+                addLogEntry(`Error: ${event.error}`);
+                stopListening();
+            };
+
+            recognition.onend = () => {
+                stopListening();
+            };
+        }
+
+        function processCommand(transcript) {
+            addLogEntry(`Heard: "${transcript}"`);
+            
+            const command = Object.keys(COMMANDS).find(key => 
+                transcript.includes(key)
+            );
+
+            if (command) {
+                const action = COMMANDS[command];
+                addLogEntry(`Executing: ${action}`);
+                sendToGitHub(action);
+            } else {
+                addLogEntry('Unknown command. Valid commands: ' + 
+                    Object.keys(COMMANDS).join(', '));
+            }
+        }
+
+        async function sendToGitHub(command) {
+            try {
+                const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
+                
+                const getResponse = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'User-Agent': 'Carduino-Voice-Controller'
+                    }
+                });
+                const { sha } = await getResponse.json();
+              
+                const updateResponse = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_CONFIG.token}`,
+                        'Content-Type': 'application/json',
+                        'User-Agent': 'Carduino-Voice-Controller'
+                    },
+                    body: JSON.stringify({
+                        message: `Voice Command: ${command}`,
+                        content: btoa(command),
+                        sha: sha
+                    })
+                });
+
+                if (!updateResponse.ok) throw new Error('Update failed');
+                addLogEntry('Command sent to Arduino!');
+            } catch (error) {
+                addLogEntry(`Error sending command: ${error.message}`);
+            }
+        }
+
+        function toggleListening() {
+            if (!recognition) return;
+            
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        }
+
+        function stopListening() {
+            isListening = false;
+            voiceButton.classList.remove('listening');
+            addLogEntry('System: Ready');
+        }
+
+        function addLogEntry(text) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `[${new Date().toLocaleTimeString()}] ${text}`;
+            commandLog.prepend(entry);
+        }
+
+        // Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            initVoice();
+            addLogEntry('Valid commands: ' + Object.keys(COMMANDS).join(', '));
+            voiceButton.addEventListener('click', toggleListening);
+        });
+    </script
+	
+	<!-- D-PAD IT S SO BAD -->
+<style>
+    .dpad-container {
+        position: fixed;
+        bottom: 120px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        width: 300px;
+    }
+
+    .dpad-btn {
+        width: 60px;
+        height: 60px;
+        background: var(--surface);
+        border: none;
+        border-radius: 15px;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .dpad-btn:active {
+        transform: scale(0.9);
+        background: var(--primary);
+    }
+
+    #dpad-stop {
+        grid-column: 1 / span 3;
+        background: var(--secondary);
+    }
+</style>
+
+<div class="dpad-container">
+    <button class="dpad-btn" id="dpad-up">↑</button>
+    <button class="dpad-btn" id="dpad-left">←</button>
+    <button class="dpad-btn" id="dpad-right">→</button>
+    <button class="dpad-btn" id="dpad-down">↓</button>
+    <button class="dpad-btn" id="dpad-stop">⏹ STOP</button>
+</div>
+
+<script>
+
+    document.querySelectorAll('.dpad-btn').forEach(btn => {
+        btn.addEventListener('mousedown', handleDpadPress);
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleDpadPress(e);
+        });
+    });
+
+    function handleDpadPress(event) {
+        const commandMap = {
+            'dpad-up': 'UP',
+            'dpad-down': 'DOWN',
+            'dpad-left': 'LEFT',
+            'dpad-right': 'RIGHT',
+            'dpad-stop': 'STOP'
+        };
+        
+        const command = commandMap[event.target.id];
+        if (command) {
+            addLogEntry(`D-Pad: ${command}`);
+            sendToGitHub(command);
+        }
+    }
+</script>
+</body>
+</html>
