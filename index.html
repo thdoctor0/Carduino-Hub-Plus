@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+
+    <html lang="en">
+    <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta description="A Website to communicate to your Carduino, your own 6v 250rpm, Motor driven, Arduino, Car, Vehicle">
     <meta authors="thdoctor">
+
     <title>Carduino Hub</title>
+
     <style>
         :root {
             --primary: #2196F3;
@@ -77,14 +80,21 @@
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
         }
-    </style>
-</head>
-<body>
 
-  <h1 id="IntroText">Carduino Hub</h1>
-    <div class="voice-container">
-        <button id="voiceButton">🎤</button>
-    </div>
+        #IntroText {
+            color: #fff;
+            font-size: 24px;
+        }
+    </style>
+    </head>
+    <body>
+
+    <h1 id="IntroText">Carduino Hub</h1>
+    
+        <div class="voice-container">
+            <button id="voiceButton">🎤</button>
+        </div>
+    
     <div class="command-log" id="commandLog"></div>
 
     <script>
@@ -233,7 +243,8 @@
     </script
 	
 	<!-- D-PAD IT S SO BAD -->
-<style>
+
+    <style>
     .dpad-container {
         position: fixed;
         bottom: 120px;
@@ -264,17 +275,17 @@
         grid-column: 1 / span 3;
         background: var(--secondary);
     }
-</style>
+    </style>
 
-<div class="dpad-container">
-    <button class="dpad-btn" id="dpad-up">↑</button>
-    <button class="dpad-btn" id="dpad-left">←</button>
-    <button class="dpad-btn" id="dpad-right">→</button>
-    <button class="dpad-btn" id="dpad-down">↓</button>
-    <button class="dpad-btn" id="dpad-stop">⏹ STOP</button>
-</div>
+    <div class="dpad-container">
+        <button class="dpad-btn" id="dpad-up">↑</button>
+        <button class="dpad-btn" id="dpad-left">←</button>
+        <button class="dpad-btn" id="dpad-right">→</button>
+        <button class="dpad-btn" id="dpad-down">↓</button>
+        <button class="dpad-btn" id="dpad-stop">⏹ STOP</button>
+    </div>
 
-<script>
+    <script>
 
     document.querySelectorAll('.dpad-btn').forEach(btn => {
         btn.addEventListener('mousedown', handleDpadPress);
@@ -299,6 +310,6 @@
             sendToGitHub(command);
         }
     }
-</script>
-</body>
+    </script>
+    </body>
 </html>
