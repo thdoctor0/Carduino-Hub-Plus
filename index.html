@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta description="A Website to communicate to your Carduino, your own 6v 250rpm, Motor driven, Arduino, Car, Vehicle">
-    <meta authors="thdoctor">
+    <meta author="thdoctor">
+    <meta deviceTitle="Xiaomi-Redmi-Note-13-5G ; Xiaomi-Redmi-Note-13-Pro ; Xiaomi-Redmi-Note-12-Pro-Plus">
 
-    <title>Carduino Hub</title>
+    <title>Carduino Hub Max</title>
 
     <style>
         :root {
@@ -16,6 +17,7 @@
             --background: #121212;
             --surface: #212121;
             --subinterface: #FF2665;
+            --constantinterface: #AA00BB;
         }
 
         body {
@@ -84,18 +86,158 @@
         #IntroText {
             color: #fff;
             font-size: 24px;
+			
+		
         }
     </style>
     </head>
     <body>
 
-    <h1 id="IntroText">Carduino Hub</h1>
-    
+    <h1 id="IntroText">Carduino Hub Max</h1>
+
+
+    <div id="serialControl" style="position: fixed; bottom: 20px; right: 20px;">
+        <button onclick="connectSerial()">Connect</button>
+        <div id="sensorData" style="background: #333; padding: 10px; margin-top: 10px;">
+          Front Distance: <span id="distance">-</span>cm
+        </div>
+        <button onclick="toggleAuto()" style="background: #4CAF50; margin-top: 10px;">
+          AUTOPILOT: <span id="autoState">OFF</span>
+        </button>
+      </div>
+      
         <div class="voice-container">
             <button id="voiceButton">🎤</button>
         </div>
-    
-    <div class="command-log" id="commandLog"></div>
+
+        <div class="command-log" id="commandLog"></div>
+		
+		<div class="free-space"> </div>
+
+        <div class="hidePhone" id="firebaseUI">
+            <div class="hidePhone" class="network-config">
+              <input class="clfui" type="text" id="newSSID" placeholder="New SSID">
+              <input class="clfui" type="password" id="newPass" placeholder="New Password">
+              <button class="clfui" onclick="updateWiFi()">Update Network</button>
+            </div>
+			
+			<style>
+			.clfui{
+				border-radius: 5px;
+			}
+			
+			.free-space {
+				width: 100%;
+				height: 40px;
+				
+			}
+			</style>
+            
+            <div class="hidePhone" class="mode-selector">
+              <select class="clfui" class="hidePhone" id="operationMode" onchange="setMode(this.value)">
+                <option class="clfui" class="hidePhone" value="0">Manual Control</option>
+                <option class="clfui" class="hidePhone" value="1">Autonomous Drive</option>
+                <option class="clfui" class="hidePhone" value="2">Security Patrol</option>
+              </select>
+            </div>
+          
+            <div class="telemetry" class="hidePhone">
+              <h3 class="hidePhone" >Live Sensor Data</h3>
+              <div class="hidePhone" >Front Distance: <span class="hidePhone" id="liveDistance">-</span>cm</div>
+              <div class="hidePhone" >Network: <span class="hidePhone" id="networkStatus">-</span></div>
+              <div class="hidePhone" >IP Address: <span class="hidePhone" id="deviceIP">-</span></div>
+            </div>
+          </div>
+          
+          <script>
+            const firebaseConfig = {
+              apiKey: "YOUR_API_KEY",
+              authDomain: "carduino-plus.firebaseapp.com",
+              databaseURL: "https://carduino-plus.firebaseio.com",
+              projectId: "carduino-plus",
+              storageBucket: "carduino-plus.appspot.com",
+              messagingSenderId: "YOUR_SENDER_ID",
+              appId: "YOUR_APP_ID"
+              // i am going to create the fire base data base tommorow it is 2:00 am
+            };
+          
+            firebase.initializeApp(firebaseConfig);
+            const database = firebase.database();
+          
+            // Real-time updates
+            database.ref('/devices/carduino01').on('value', (snapshot) => {
+              const data = snapshot.val();
+              document.getElementById('liveDistance').textContent = data.distance;
+              document.getElementById('networkStatus').textContent = data.network;
+              document.getElementById('deviceIP').textContent = data.ip;
+            });
+          
+            function setMode(mode) {
+              database.ref('/devices/carduino01/mode').set(parseInt(mode));
+            }
+          
+            function updateWiFi() {
+              const newSSID = document.getElementById('newSSID').value;
+              const newPass = document.getElementById('newPass').value;
+              
+              database.ref('/devices/carduino01/network').set({
+                ssid: newSSID,
+                password: newPass
+              });
+            }
+          </script>
+
+      <script>
+      let serialPort;
+      let autoUpdateInterval;
+      
+      async function connectSerial() {
+        try {
+          serialPort = await navigator.serial.requestPort();
+          await serialPort.open({ baudRate: 115200 });
+          startReading();
+        } catch(err) {
+          console.error('Serial connection failed:', err);
+        }
+      }
+      
+      async function startReading() {
+        const reader = serialPort.readable.getReader();
+        while(true) {
+          const { value, done } = await reader.read();
+          if(value) {
+            const text = new TextDecoder().decode(value);
+            document.getElementById('distance').textContent = text.trim();
+          }
+          if(done) break;
+        }
+      }
+      
+      function sendCommand(cmd) {
+        const writer = serialPort.writable.getWriter();
+        writer.write(new TextEncoder().encode(cmd + '\n'));
+        writer.releaseLock();
+      }
+      
+      function toggleAuto() {
+        const stateElement = document.getElementById('autoState');
+        const newState = stateElement.textContent === 'OFF' ? 'ON' : 'OFF';
+        stateElement.textContent = newState;
+        sendCommand(newState === 'ON' ? 'AUTO_ON' : 'AUTO_OFF');
+        
+        if(newState === 'ON') {
+          autoUpdateInterval = setInterval(() => {
+            sendCommand('GET_DISTANCE');
+          }, 1000);
+        } else {
+          clearInterval(autoUpdateInterval);
+        }
+      }
+      
+      function processControl(command) {
+        sendCommand(command.toUpperCase());
+      }
+      </script>
 
     <script>
         const COMMANDS = {
@@ -103,6 +245,8 @@
             'backward': 'DOWN',
             'left': 'LEFT',
             'right': 'RIGHT',
+            'write': 'RIGHT',
+            'speed': 'UP',
             'stop': 'STOP',
             'halt': 'STOP',
             'go': 'UP',
@@ -240,42 +384,147 @@
             addLogEntry('Valid commands: ' + Object.keys(COMMANDS).join(', '));
             voiceButton.addEventListener('click', toggleListening);
         });
-    </script
+    </script>
 	
 	<!-- D-PAD IT S SO BAD -->
 
-    <style>
+<style>
+.dpad-container {
+    position: fixed;
+    width: 200px;
+    height: 200px;
+    margin: 20px auto;
+	bottom: 35%;
+	left: 9%;
+}
+
+.dpad-btn {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 15px;
+    background: var(--surface);
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dpad-btn:active {
+    transform: scale(0.9);
+    filter: brightness(1.2);
+}
+
+#dpad-up {
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+}
+
+#dpad-left {
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    background: var(--primary);
+}
+
+#dpad-right {
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    background: var(--primary);
+}
+
+#dpad-down {
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary);
+}
+
+#dpad-stop {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70px;
+    height: 70px;
+    background: var(--secondary);
+    z-index: 2;
+}
+
+/* Add hover effects */
+.dpad-btn:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 0 10px rgba(255,255,255,0.2);
+	}
+	
+@media screen and (max-width: 924px) {
     .dpad-container {
         position: fixed;
-        bottom: 120px;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        width: 300px;
+        bottom: 20px;
+        left: 0;
+        width: 100%  !important;
+        height: auto;
+        margin: 0;
+        padding: 15px;
+        display: flex;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(2px);
+        z-index: 1000;
     }
+
+    #dpad-up,
+    #dpad-down,
+    #dpad-left,
+    #dpad-right,
+    #dpad-stop {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        transform: none;
+        margin: 5px;
+        width: 50px;
+        height: 50px;
+    }
+
 
     .dpad-btn {
-        width: 60px;
-        height: 60px;
-        background: var(--surface);
-        border: none;
-        border-radius: 15px;
-        color: white;
-        font-size: 24px;
-        cursor: pointer;
-        transition: all 0.2s;
+        font-size: 19px;
     }
 
-    .dpad-btn:active {
-        transform: scale(0.9);
-        background: var(--primary);
+    .dpad-container {
+        display: grid;
+        grid-template-areas:
+            ". up ."
+            "left stop right"
+            ". down .";
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+        width: 250px;
+        margin: 0 auto;
     }
 
-    #dpad-stop {
-        grid-column: 1 / span 3;
-        background: var(--secondary);
-    }
-    </style>
+    #dpad-up { grid-area: up }
+    #dpad-left { grid-area: left }
+    #dpad-right { grid-area: right }
+    #dpad-down { grid-area: down }
+    #dpad-stop { grid-area: stop }
+	
+	.hidePhone {
+		display:none;
+	}
+	
+	#serialControl {
+		display: none;
+	}
+}
+
+</style>
 
     <div class="dpad-container">
         <button class="dpad-btn" id="dpad-up">↑</button>
@@ -311,5 +560,38 @@
         }
     }
     </script>
+
+    <script>
+        function handleControl(command) {
+          if(command === 'AUTO_ON') {
+            database.ref('mode').set(1);
+          } else if(command === 'AUTO_OFF') {
+            database.ref('mode').set(0);
+          } else {
+            database.ref('manual').set(command);
+            sendToGitHub(command); 
+          }
+        }
+        
+        document.querySelectorAll('.dpad-btn').forEach(btn => {
+          btn.addEventListener('mousedown', e => handleControl(commandMap[e.target.id]));
+        });
+        
+        function updateNetwork() {
+          const newSSID = document.getElementById('newSSID').value;
+          const newPass = document.getElementById('newPass').value;
+          
+          if(newSSID.length < 1 || newPass.length < 8) {
+            alert('Invalid network credentials!');
+            return;
+          }
+          
+          database.ref('network').set({
+            ssid: newSSID,
+            pass: newPass
+          });
+        }
+        </script>
+
     </body>
 </html>
