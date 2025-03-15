@@ -7,8 +7,11 @@
     <meta description="A Website to communicate to your Carduino, your own 6v 250rpm, Motor driven, Arduino, Car, Vehicle">
     <meta author="thdoctor">
     <meta deviceTitle="Xiaomi-Redmi-Note-13-5G ; Xiaomi-Redmi-Note-13-Pro ; Xiaomi-Redmi-Note-12-Pro-Plus">
+    <meta name="arduinoPassword" content="passwordBypass">
 
-    <title>Carduino Hub Max</title>
+    <script src="colorPicker.js"></script>
+
+    <title>Carduino Hub Ultra</title>
 
     <style>
         :root {
@@ -18,6 +21,7 @@
             --surface: #212121;
             --subinterface: #FF2665;
             --constantinterface: #AA00BB;
+            --primaryinterface: #313131;
         }
 
         body {
@@ -38,17 +42,17 @@
         }
 
         #voiceButton {
-            width: 105px;
-            height: 105px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             background: var(--primary);
             border: none;
             cursor: pointer;
-            transition: all 0.3243s ease;
+            transition: all 0.3251s ease;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 28px;
+            font-size: 29px;
         }
 
         #voiceButton.listening {
@@ -58,13 +62,13 @@
         }
 
         .command-log {
-            width: 88%;
-            max-width: 560px;
-            height: 260px;
+            width: 86%;
+            max-width: 559px;
+            height: 259px;
             background: var(--surface);
-            margin-top: 30px;
+            margin-top: 29px;
             padding: 16px;
-            border-radius: 15px;
+            border-radius: 16px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
         }
@@ -79,22 +83,55 @@
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+            25% { transform: scale(0.76); }
+            50% { transform: scale(1.2613); }
+            75% { transform: scale(0.76); }
             100% { transform: scale(1); }
         }
 
-        #IntroText {
+        .IntroText {
             color: #fff;
-            font-size: 24px;
-			
-		
         }
     </style>
     </head>
     <body>
 
-    <h1 id="IntroText">Carduino Hub Max</h1>
+    <h1 class="IntroText">Carduino Hub Ultra</h1>
+    <h4 class="IntroText">Update Comzas</h4>
 
+    <div id="sensorVisualization" style="position: fixed; top: 20px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;">
+    <h4 style="color: white; margin: 0 0 10px 0;">Obstacle Map</h4>
+    <canvas id="sonarCanvas" width="300" height="300"></canvas>
+    <div style="color: white; margin-top: 5px;">
+        <button onclick="clearMap()">Clear Map</button>
+        <span id="sensorStats">Range: 0cm | Angle: 0°</span>
+    </div>
+</div>
+
+<div class="colorPicker" id="colorPickerDiv" style="position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px; z-index: 1000;">
+    <h4 style="color: white; margin: 0 0 10px 0;">Vision Control</h4>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+        <div>
+            <input type="number" id="RED" min="0" max="255" value="150" 
+                   style="width: 80px; background: #ff000033; color: white; border: 1px solid red;">
+            <label style="color: red;">Red</label>
+        </div>
+        <div>
+            <input type="number" id="GREEN" min="0" max="255" value="150"
+                   style="width: 80px; background: #00ff0033; color: white; border: 1px solid lime;">
+            <label style="color: lime;">Green</label>
+        </div>
+        <div>
+            <input type="number" id="BLUE" min="0" max="255" value="150"
+                   style="width: 80px; background: #0000ff33; color: white; border: 1px solid blue;">
+            <label style="color: cyan;">Blue</label>
+        </div>
+    </div>
+    <button id="colorPickerButton" 
+            style="margin-top: 10px; background: var(--primary); color: white; padding: 8px 15px; border: none; border-radius: 4px;">
+        Calibrate Vision
+    </button>
+</div>
 
     <div id="serialControl" style="position: fixed; bottom: 20px; right: 20px;">
         <button onclick="connectSerial()">Connect</button>
@@ -107,7 +144,7 @@
       </div>
       
         <div class="voice-container">
-            <button id="voiceButton">🎤</button>
+            <button id="voiceButton">??</button>
         </div>
 
         <div class="command-log" id="commandLog"></div>
@@ -120,7 +157,7 @@
               <input class="clfui" type="password" id="newPass" placeholder="New Password">
               <button class="clfui" onclick="updateWiFi()">Update Network</button>
             </div>
-			
+
 			<style>
 			.clfui{
 				border-radius: 5px;
@@ -159,6 +196,7 @@
               messagingSenderId: "YOUR_SENDER_ID",
               appId: "YOUR_APP_ID"
               // i am going to create the fire base data base tommorow it is 2:00 am
+              // update i am too lazy it is actually 2 days after and it is 3:33 am
             };
           
             firebase.initializeApp(firebaseConfig);
@@ -249,7 +287,8 @@
             'speed': 'UP',
             'stop': 'STOP',
             'halt': 'STOP',
-            'go': 'UP',
+            'auto': 'AUTO',
+			'manual': 'MANUAL',
             'reverse': 'DOWN'
         };
 
@@ -270,7 +309,7 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             
             if (!SpeechRecognition) {
-                addLogEntry('⚠️ Voice recognition not supported in this browser, Try to use google chrome');
+                addLogEntry('?? Voice recognition not supported in this browser, Try to use google chrome');
                 return;
             }
 
@@ -527,11 +566,11 @@
 </style>
 
     <div class="dpad-container">
-        <button class="dpad-btn" id="dpad-up">↑</button>
-        <button class="dpad-btn" id="dpad-left">←</button>
-        <button class="dpad-btn" id="dpad-right">→</button>
-        <button class="dpad-btn" id="dpad-down">↓</button>
-        <button class="dpad-btn" id="dpad-stop">⏹ STOP</button>
+        <button class="dpad-btn" id="dpad-up">?</button>
+        <button class="dpad-btn" id="dpad-left">?</button>
+        <button class="dpad-btn" id="dpad-right">?</button>
+        <button class="dpad-btn" id="dpad-down">?</button>
+        <button class="dpad-btn" id="dpad-stop">?</button>
     </div>
 
     <script>

@@ -1,0 +1,30 @@
+{
+  "commands": {
+    "movement": {
+      "forward": "VVA=",
+      "backward": "RE9XTg==",
+      "left": "TEVOVA==",
+      "right": "UklHSFQ=",
+      "stop": "U1RPUA==",
+      "rotate90": "Uk9UQVRFOTA=",
+      "rotate180": "Uk9UQVRFMTgw",
+      "rotate270": "Uk9UQVRFMjcw",
+      "rotate360": "Uk9UQVRFMzYw",
+      "rotate_mn_90": "Uk9UQVRFTU45MA==",
+      "rotate_mn_180": "Uk9UQVRFTU4xODA=",
+      "rotate_mn_270": "Uk9UQVRFTU4yNzA=",
+      "rotate_mn_360": "Uk9UQVRFTU4zNjA="
+    },
+    "modes": {
+      "auto_pilot": "QVVUT19QSUxPVA==",
+      "manual": "TUFOVUFM",
+      "auto_pilot_camera_driven": "QVVUT19QSUxPVF9DQU1FUkFfRFJJVkVO"
+    },
+    "safety": {
+      "emergency_stop": "RU1FUkdFTkNZX1NUT1A=",
+      "break_function": "YnJlYWstZnVuY3Rpb24=",
+      "traffic_light_break": "VFJBRkZJQ19MSUdIVF9TVE9Q"
+    }
+  },
+  "current_command": "TUFOVUFM"
+}
