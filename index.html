@@ -144,7 +144,7 @@
       </div>
       
         <div class="voice-container">
-            <button id="voiceButton">??</button>
+            <button id="voiceButton">🎙️</button>
         </div>
 
         <div class="command-log" id="commandLog"></div>
@@ -293,7 +293,7 @@
         };
 
         const GITHUB_CONFIG = {
-            token: 'i am going to place this next day i am so over my head ',
+            token: 'this got canceled ',
             owner: 'thdoctor0',
             repo: 'Carduino-Hub-Plus',
             path: 'command.json'
@@ -309,7 +309,7 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             
             if (!SpeechRecognition) {
-                addLogEntry('?? Voice recognition not supported in this browser, Try to use google chrome');
+                addLogEntry('🎙️ Voice recognition not supported in this browser, Try to use google chrome');
                 return;
             }
 
@@ -317,6 +317,7 @@
             recognition.continuous = true;
             recognition.interimResults = true;
             recognition.lang = 'en-US';
+            alternate.recognition.lang = "ro-RO";
 
             recognition.onstart = () => {
                 isListening = true;
@@ -425,7 +426,6 @@
         });
     </script>
 	
-	<!-- D-PAD IT S SO BAD -->
 
 <style>
 .dpad-container {
@@ -566,11 +566,11 @@
 </style>
 
     <div class="dpad-container">
-        <button class="dpad-btn" id="dpad-up">?</button>
-        <button class="dpad-btn" id="dpad-left">?</button>
-        <button class="dpad-btn" id="dpad-right">?</button>
-        <button class="dpad-btn" id="dpad-down">?</button>
-        <button class="dpad-btn" id="dpad-stop">?</button>
+        <button class="dpad-btn" id="dpad-up">🢁</button>
+        <button class="dpad-btn" id="dpad-left">🢀</button>
+        <button class="dpad-btn" id="dpad-right">🢀</button>
+        <button class="dpad-btn" id="dpad-down">🢃</button>
+        <button class="dpad-btn" id="dpad-stop">⌧</button>
     </div>
 
     <script>
@@ -589,7 +589,8 @@
             'dpad-down': 'DOWN',
             'dpad-left': 'LEFT',
             'dpad-right': 'RIGHT',
-            'dpad-stop': 'STOP'
+            'dpad-stop': 'STOP',
+            'dpad-rotate':'ROTATE90'
         };
         
         const command = commandMap[event.target.id];
