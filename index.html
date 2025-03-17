@@ -36,6 +36,19 @@
             align-items: center;
         }
 
+        @media screen and (max-width: 924px) {
+            body {
+            height: 14000px;
+        }
+
+        .sensorVisualization {
+            position: absolute !important;
+            top: 100% !important;
+            right: 20% !important;
+            z-index: 1000 !important;
+        }
+    }
+
         .voice-container {
             position: relative;
             margin-top: 50px;
@@ -83,9 +96,9 @@
 
         @keyframes pulse {
             0% { transform: scale(1); }
-            25% { transform: scale(0.76); }
-            50% { transform: scale(1.2613); }
-            75% { transform: scale(0.76); }
+            25% { transform: scale(0.88); }
+            50% { transform: scale(1.12); }
+            75% { transform: scale(0.88); }
             100% { transform: scale(1); }
         }
 
@@ -99,7 +112,7 @@
     <h1 class="IntroText">Carduino Hub Ultra</h1>
     <h4 class="IntroText">Update Comzas</h4>
 
-    <div id="sensorVisualization" style="position: fixed; top: 20px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;">
+    <div class="sensorVisualization" id="sensorVisualization" style="position: fixed; top: 20px; right: 20px; z-index: 1000; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 8px;">
     <h4 style="color: white; margin: 0 0 10px 0;">Obstacle Map</h4>
     <canvas id="sonarCanvas" width="300" height="300"></canvas>
     <div style="color: white; margin-top: 5px;">
@@ -107,6 +120,7 @@
         <span id="sensorStats">Range: 0cm | Angle: 0°</span>
     </div>
 </div>
+
 
 <div class="colorPicker" id="colorPickerDiv" style="position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px; z-index: 1000;">
     <h4 style="color: white; margin: 0 0 10px 0;">Vision Control</h4>
@@ -128,7 +142,7 @@
         </div>
     </div>
     <button id="colorPickerButton" 
-            style="margin-top: 10px; background: var(--primary); color: white; padding: 8px 15px; border: none; border-radius: 4px;">
+            style="margin-top: 10px; background: var(--primary); color: white; padding: 8px 15px; border: none; border-radius: 4px; @media screen and (max-width: 924px) {position: absolute;};">
         Calibrate Vision
     </button>
 </div>
@@ -160,7 +174,7 @@
 
 			<style>
 			.clfui{
-				border-radius: 5px;
+				border-radius: 6px;
 			}
 			
 			.free-space {
@@ -289,11 +303,12 @@
             'halt': 'STOP',
             'auto': 'AUTO',
 			'manual': 'MANUAL',
-            'reverse': 'DOWN'
+            'reverse': 'DOWN',
+            'camera': 'CAMERA'
         };
 
         const GITHUB_CONFIG = {
-            token: 'this got canceled ',
+            token: 'this got canceled',
             owner: 'thdoctor0',
             repo: 'Carduino-Hub-Plus',
             path: 'command.json'
@@ -451,26 +466,26 @@
 }
 
 .dpad-btn:active {
-    transform: scale(0.9);
-    filter: brightness(1.2);
+    transform: scale(0.8715);
+    filter: brightness(1.2215);
 }
 
 #dpad-up {
     top: 0;
-    left: 50%;
+    left: 49%;
     transform: translateX(-50%);
     background: var(--primary);
 }
 
 #dpad-left {
-    top: 50%;
+    top: 49%;
     left: 0;
     transform: translateY(-50%);
     background: var(--primary);
 }
 
 #dpad-right {
-    top: 50%;
+    top: 49%;
     right: 0;
     transform: translateY(-50%);
     background: var(--primary);
@@ -478,17 +493,17 @@
 
 #dpad-down {
     bottom: 0;
-    left: 50%;
+    left: 49%;
     transform: translateX(-50%);
     background: var(--primary);
 }
 
 #dpad-stop {
-    top: 50%;
-    left: 50%;
+    top: 49%;
+    left: 49%;
     transform: translate(-50%, -50%);
-    width: 70px;
-    height: 70px;
+    width: 71px;
+    height: 71px;
     background: var(--secondary);
     z-index: 2;
 }
