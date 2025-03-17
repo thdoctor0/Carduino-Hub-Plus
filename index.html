@@ -6,10 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta description="A Website to communicate to your Carduino, your own 6v 250rpm, Motor driven, Arduino, Car, Vehicle">
     <meta author="thdoctor">
-    <meta deviceTitle="Xiaomi-Redmi-Note-13-5G ; Xiaomi-Redmi-Note-13-Pro ; Xiaomi-Redmi-Note-12-Pro-Plus">
+    <meta deviceTitle="Xiaomi-Redmi-Note-13-5G ; Xiaomi-Redmi-Note-13-Pro ; Xiaomi-Redmi-Note-12-Pro-Plus ; Samsung Galaxy A54 ; Samsung Galaxy A51">
     <meta name="arduinoPassword" content="passwordBypass">
+    <meta name="logs" content="/logging.logs">
 
     <script src="colorPicker.js"></script>
+    <script src="enhanced_communication.js"></script>
+    <script src="comzas_math_engine.js"></script>
+    <script src="comzas_statistics_engine.js"></script>
 
     <title>Carduino Hub Ultra</title>
 
@@ -179,7 +183,7 @@
 			
 			.free-space {
 				width: 100%;
-				height: 40px;
+				height: 42px;
 				
 			}
 			</style>
@@ -199,45 +203,6 @@
               <div class="hidePhone" >IP Address: <span class="hidePhone" id="deviceIP">-</span></div>
             </div>
           </div>
-          
-          <script>
-            const firebaseConfig = {
-              apiKey: "YOUR_API_KEY",
-              authDomain: "carduino-plus.firebaseapp.com",
-              databaseURL: "https://carduino-plus.firebaseio.com",
-              projectId: "carduino-plus",
-              storageBucket: "carduino-plus.appspot.com",
-              messagingSenderId: "YOUR_SENDER_ID",
-              appId: "YOUR_APP_ID"
-              // i am going to create the fire base data base tommorow it is 2:00 am
-              // update i am too lazy it is actually 2 days after and it is 3:33 am
-            };
-          
-            firebase.initializeApp(firebaseConfig);
-            const database = firebase.database();
-          
-            // Real-time updates
-            database.ref('/devices/carduino01').on('value', (snapshot) => {
-              const data = snapshot.val();
-              document.getElementById('liveDistance').textContent = data.distance;
-              document.getElementById('networkStatus').textContent = data.network;
-              document.getElementById('deviceIP').textContent = data.ip;
-            });
-          
-            function setMode(mode) {
-              database.ref('/devices/carduino01/mode').set(parseInt(mode));
-            }
-          
-            function updateWiFi() {
-              const newSSID = document.getElementById('newSSID').value;
-              const newPass = document.getElementById('newPass').value;
-              
-              database.ref('/devices/carduino01/network').set({
-                ssid: newSSID,
-                password: newPass
-              });
-            }
-          </script>
 
       <script>
       let serialPort;
@@ -304,11 +269,25 @@
             'auto': 'AUTO',
 			'manual': 'MANUAL',
             'reverse': 'DOWN',
-            'camera': 'CAMERA'
+            'camera': 'CAMERA',
+        };
+
+        const COMMANDSROMANIAN = {
+            'inainte': 'UP',
+            'inapoi': 'DOWN',
+            'stanga': 'LEFT',
+            'dreapta': 'RIGHT',
+            'treapta': 'RIGHT',
+            'viteza': 'UP',
+            'stop': 'STOP',
+            'opreste': 'STOP',
+            'auto': 'AUTO',
+			'manual': 'MANUAL',
+            '': 'DOWN',
+            'camera': 'CAMERA',
         };
 
         const GITHUB_CONFIG = {
-            token: 'this got canceled',
             owner: 'thdoctor0',
             repo: 'Carduino-Hub-Plus',
             path: 'command.json'
@@ -332,7 +311,7 @@
             recognition.continuous = true;
             recognition.interimResults = true;
             recognition.lang = 'en-US';
-            alternate.recognition.lang = "ro-RO";
+            alternate.recognition.lang = "ro-RO"; // add soon
 
             recognition.onstart = () => {
                 isListening = true;
@@ -379,7 +358,7 @@
 
         async function sendToGitHub(command) {
             try {
-                const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
+                const url = `https://api.github.com/repos/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
                 
                 const getResponse = await fetch(url, {
                     headers: {
@@ -605,7 +584,10 @@
             'dpad-left': 'LEFT',
             'dpad-right': 'RIGHT',
             'dpad-stop': 'STOP',
-            'dpad-rotate':'ROTATE90'
+            'dpad-rotate90':'ROTATE90',
+            'dpad-rotate360':'ROTATE360',
+            'dpad-rotate-minus-90':'ROTATEMN90',
+            'dpad-rotate-minus-360':'ROTATEMN360',
         };
         
         const command = commandMap[event.target.id];
