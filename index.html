@@ -257,7 +257,7 @@
       </script>
 
     <script>
-        const COMMANDS = {
+        const COMMANDSENGLISH = {
             'forward': 'UP',
             'backward': 'DOWN',
             'left': 'LEFT',
@@ -272,7 +272,7 @@
             'camera': 'CAMERA',
         };
 
-        const COMMANDSROMANIAN = {
+        const COMMANDS = {
             'inainte': 'UP',
             'inapoi': 'DOWN',
             'stanga': 'LEFT',
@@ -283,7 +283,7 @@
             'opreste': 'STOP',
             'auto': 'AUTO',
 			'manual': 'MANUAL',
-            '': 'DOWN',
+            'jos': 'DOWN',
             'camera': 'CAMERA',
         };
 
@@ -310,8 +310,8 @@
             recognition = new SpeechRecognition();
             recognition.continuous = true;
             recognition.interimResults = true;
-            recognition.lang = 'en-US';
-            alternate.recognition.lang = "ro-RO"; // add soon
+            alternate.recognition.lang = 'en-US'; // add soon
+            recognition.lang = "ro-RO"; 
 
             recognition.onstart = () => {
                 isListening = true;
